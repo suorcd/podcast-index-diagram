@@ -1,0 +1,109 @@
+@startuml pi2.0_all
+
+title Podcast Index 2.0 infra
+
+skinparam node {
+    BackgroundColor #FFFFD0
+    BackgroundColor<<host>> #74a8dc
+}
+
+skinparam cloud {
+    BackgroundColor<<user>> #69c890
+    BackgroundColor<<api>> #f4a24f
+    BackgroundColor<<cdn>> #69c890
+
+    BackgroundColor<<vps>> #69c890
+  
+}
+cloud internet {
+
+}
+
+node cloudflare <<cdn>> {
+  rectangle sni
+  node cloudflare00 <<cdn>> {
+    rectangle roundRobin
+  }
+  node cloudflare01 <<cdn>> {
+
+  }
+}
+
+node linode <<vps>> as "Podcast Index" {
+
+
+  node apiServer00 <<host>> as "API Server00\n(Ubuntu22.04)" {
+
+      rectangle api_nginx_reverse_proxy00 as "api.podcastindex.org"
+      rectangle fpm00 as "PHP FPM"
+  }
+  node apiServer01 <<host>> as "API Server01\n(Ubuntu22.04)" {
+      rectangle api_nginx_reverse_proxy01 as "api.podcastindex.org"
+      rectangle fpm01 as "PHP FPM"
+  }
+
+  node dbserver <<host>> as "DB\n(Ubuntu22.04)" {
+      database dbSrv <<mysql8>> as "Podcast Index DB" {
+        
+      }
+      rectangle volume00 as "640GB DB storage"
+      rectangle ram00 as "32DB"
+  }
+
+  node webSrv <<host>> as "Podcast Index Web Server\nSmall Linode\n(Ubuntu22.04)" {
+    node webSite00 as "https://podcastindex.org/" {
+      
+    }
+  }
+
+  node aggSmall <<host>> as "Aggregators 1GB nanode\n 6x"{
+    rectangle partyTime00 as PartyTime
+    rectangle puller00 as "Puller to pull feed"
+
+  }
+  node aggMed <<host>> as "Aggregators 2GB Linodes\n 3x"{
+    rectangle partyTime00 as PartyTime
+    rectangle puller00 as "Puller to pull feed"
+
+  }
+  node searchIndexer00 <<host>> as "Main Indexer\n 3x" {
+    rectangle pulls00 as "Pulls DB every 15 to 20 minutes"
+    rectangle sphinx00 as "Sphinx Manitcore"
+    rectangle siNote00 as "Indexes the title of the feed"
+  }
+    node searchIndexer01 <<host>> as "si01" {
+
+    
+  }
+  node searchIndexer02 <<host>> as "si01" {
+
+    
+  }
+  cloud backEnd <<api>> {
+    [podpingWebsocket]
+    queue sqs
+  }
+   
+}
+
+
+[internet] --> [cloudflare00]
+[cloudflare00] --> [apiServer00]
+[cloudflare00] --> [apiServer01]
+
+[api_nginx_reverse_proxy00] --> [fpm00]
+[api_nginx_reverse_proxy01] --> [fpm01]
+
+[apiServer00] --> [dbserver]
+[apiServer01] --> [dbserver]
+
+[cloudflare01] --> [webSrv]
+webSrv --> dbserver
+
+aggSmall --> internet
+aggMed --> internet
+aggSmall --> dbserver
+aggMed --> dbserver
+
+searchIndexer00 --> dbserver
+@enduml
