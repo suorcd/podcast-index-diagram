@@ -72,7 +72,7 @@ node linode <<vps>> as "Podcast Index" {
     node searchIndexer00 <<host>> as "Main Indexer\n 3x\n(Ubuntu20.04)" {
       rectangle searchIndexer00a as "Pulls DB every 15 to 20 minutes\nSphinx Manitcore\nIndexes the title, and author of the feed"
     }
-    node searchIndexer01 <<host>> as "si01\n(Ubuntu20.04)" {
+    node searchIndexer01 <<host>> as "Sphinx Manitcore\n(Ubuntu20.04)" {
       rectangle searchIndexer01a as "Sphinx Manitcore\nIndexes the Person search"
       
     }
