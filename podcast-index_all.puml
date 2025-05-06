@@ -3,17 +3,13 @@ title Podcast Index 2.0 infra
 
 skinparam node {
     BackgroundColor #FFFFD0
-    BackgroundColor<<host>> #74a8dc
+    BackgroundColor<<host>> #e92626
+    BackgroundColor<<linode>> #80a0ff
 }
 
 skinparam cloud {
-    BackgroundColor<<user>> #69c890
-    BackgroundColor<<api>> #f4a24f
-    BackgroundColor<<cdn>> #69c890
-    BackgroundColor<<vps>> #69c890
-  
+    BackgroundColor<<cdn>> #f38020 
 }
-
 
 
 left to right direction
@@ -25,7 +21,7 @@ cloud voltageNode {
 
 }
 
-node cloudflare <<cdn>> {
+cloud cloudflare <<cdn>> {
   rectangle sni
   node cloudflare00 <<cdn>> {
     rectangle roundRobin
@@ -35,7 +31,7 @@ node cloudflare <<cdn>> {
   }
 }
 
-node linode <<vps>> as "Podcast Index" {
+node linode <<linode>> as "Podcast Index" {
 
   package frontEnd {
     node apiServer00 <<host>> as "API Server00\n(Ubuntu20.04)\nx2" {
@@ -43,12 +39,8 @@ node linode <<vps>> as "Podcast Index" {
       
     }
 
-
-
     node webSrv <<host>> as "Podcast Index Web Server\nSmall Linode\n(Ubuntu20.04)" {
-      node webSite00 as "https://podcastindex.org/" {
-        
-      }
+      rectangle webSrva as "https://podcastindex.org/\nnginx\nPHP FPM"
     }
   }
   node dbserver <<host>> as "DB\n(Ubuntu20.04)" {
