@@ -18,6 +18,7 @@ skinparam cloud {
 cloud internet {
 
 }
+cloud mailgun {}
 
 node cloudflare <<cdn>> {
   rectangle sni
@@ -56,7 +57,7 @@ node linode <<vps>> as "Podcast Index" {
     }
   }
 
-  node aggSmall <<host>> as "Aggregators 1GB nanode\n 6x"{
+  node aggSmall <<host>> as "Aggregators \n1GB nanode $5month\n(Ubuntu22.04)\n 6x"{
     rectangle partyTime00 as PartyTime
     rectangle puller00 as "Puller to pull feed"
 
@@ -66,23 +67,53 @@ node linode <<vps>> as "Podcast Index" {
     rectangle puller00 as "Puller to pull feed"
 
   }
-  node searchIndexer00 <<host>> as "Main Indexer\n 3x" {
+  node searchIndexer00 <<host>> as "Main Indexer\n 3x\n(Ubuntu22.04)" {
     rectangle pulls00 as "Pulls DB every 15 to 20 minutes"
     rectangle sphinx00 as "Sphinx Manitcore"
-    rectangle siNote00 as "Indexes the title of the feed"
+    rectangle siNote00 as "Indexes the title, and author of the feed"
   }
-    node searchIndexer01 <<host>> as "si01" {
-
+  node searchIndexer01 <<host>> as "si01\n(Ubuntu22.04)" {
+    rectangle sphinx01 as "Sphinx Manitcore"
+    rectangle siNote01 as "Indexes the Person search"
     
   }
-  node searchIndexer02 <<host>> as "si01" {
+  node searchIndexer02 <<host>> as "Sphinx Manitcore\n(Ubuntu22.04)" {
+    rectangle sphinx02 as "Sphinx Manitcore"
+    rectangle siNote02 as "Autocomplete"
+  }
+  node searchIndexer3 <<host>> as "Sphinx Manitcore\n(Ubuntu22.04)" {
+    rectangle sphinx03 as "Sphinx Manitcore"
+    rectangle siNote03 as "Value for value search"
+  }
 
-    
+  node utilitySrv00 <<host>> as "Utility Mail\n1GB nanode $5month\n(Ubuntu22.04)" {
+    rectangle mail00  as "Mail bastion host\nAll mail goes through this host\n then sent to mailgun" 
   }
-  cloud backEnd <<api>> {
-    [podpingWebsocket]
-    queue sqs
+  node utilitySrv01 <<host>> as "Utility Backup\n4G linode\n(Ubuntu22.04)" {
+    rectangle us01a as "Backups\nnightly, weekly, monthly"
+    rectangle us01b as "Monitoring podping"
+    rectangle us01c as "DB flags when things need to polled"
+    rectangle us01d as "Utility work\ncron jobs\npruning, slow polling, weekly db dumps"
   }
+  node utilitySrv02 <<host>> as "Utility Webhook gateway\n1GB nanode $5month\n(Ubuntu22.04)" {
+    rectangle us02a as "Sovereign Feed\nWebhook gateway or any webhook traffic"
+    rectangle us02b as "Unlocks Podcast Index Lightning Node"  
+  }
+  node ligthnginUtilitySrv <<host>> as "Utility Lightning\n1GB nanode $5month\n(Ubuntu22.04)" {
+    rectangle lightning00 as "Lightning node maintenance\nLightning node other tasks\nPolls once a minutes\nPolls node trancations"
+    rectangle lightning01 as "Lightning node other tasks; generating charts\nweeklyboostagrams\nrunning total\ndumps to a MySQL DB"
+  }
+  node podping00 <<host>> as "Podping\n1GB nanode $5month\n(Ubuntu22.04)\nx5" {
+    rectangle podping00a as "Australia\nEurope\n3x US by region"
+
+  }
+  node activityPubBridge00 <<host>> as "ActivityPub Bridge\n2GB linode $10month\n(Ubuntu22.04)" {
+    rectangle activityPub00 as "ActivityPub Bridge"
+  }
+  node testingSrv00 <<host>> as "Genral testing and work\n1GB nanode $5month\n(Ubuntu22.04)" {
+    rectangle testing00 as "Testing and new work"
+  }
+
    
 }
 
@@ -101,9 +132,26 @@ node linode <<vps>> as "Podcast Index" {
 webSrv --> dbserver
 
 aggSmall --> internet
-aggMed --> internet
 aggSmall --> dbserver
+
+aggMed --> internet
 aggMed --> dbserver
 
+searchIndexer00 --> internet
+searchIndexer01 --> internet
+searchIndexer02 --> internet
+searchIndexer03 --> internet
+
 searchIndexer00 --> dbserver
+searchIndexer01 --> dbserver
+searchIndexer02 --> dbserver
+searchIndexer03 --> dbserver
+
+utilitySrv00 --> mailgun
+utilitySrv00 --> internet
+
+utilitySrv01 --> internet
+utilitySrv01 --> dbserver
+
+
 @enduml
